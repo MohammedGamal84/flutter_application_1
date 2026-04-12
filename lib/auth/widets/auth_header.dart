@@ -8,6 +8,8 @@ class AuthHeader extends StatelessWidget {
   final int tabIndex;
   final Color greenColor;
   final List<AuthParticle> particles;
+  final bool isArabic;
+  final VoidCallback onLanguageToggle;
 
   const AuthHeader({
     super.key,
@@ -17,12 +19,18 @@ class AuthHeader extends StatelessWidget {
     required this.tabIndex,
     required this.greenColor,
     required this.particles,
+    required this.isArabic,
+    required this.onLanguageToggle,
   });
 
   @override
   Widget build(BuildContext context) {
+    final double headerHeight = h * 0.42;
+    final double topInset = MediaQuery.of(context).padding.top;
+
     return SizedBox(
-      height: h * 0.35,
+      height: headerHeight,
+      width: double.infinity,
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -44,21 +52,45 @@ class AuthHeader extends StatelessWidget {
             ),
           ),
           Container(
+            width: double.infinity,
+            height: double.infinity,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  Colors.white.withOpacity(0.9),
-                ],
+                colors: [Colors.transparent, Colors.white.withOpacity(0.88)],
+              ),
+            ),
+          ),
+          Positioned(
+            top: topInset + 10,
+            right: isArabic ? w * 0.04 : null,
+            left: isArabic ? null : w * 0.04,
+            child: GestureDetector(
+              onTap: onLanguageToggle,
+              child: Container(
+                width: w * 0.08,
+                height: w * 0.08,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.8),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+
+                child: Icon(Icons.language, size: w * 0.04, color: Colors.black87),
               ),
             ),
           ),
           ...particles.map((p) {
             return Positioned(
               left: p.x * w,
-              top: ((p.y + scrollOffset * 0.05) % 1) * h * 0.35,
+              top: ((p.y + scrollOffset * 0.05) % 1) * headerHeight,
               child: Opacity(
                 opacity: p.opacity,
                 child: Container(
@@ -73,7 +105,7 @@ class AuthHeader extends StatelessWidget {
             );
           }).toList(),
           Positioned(
-            bottom: h * 0.03 - scrollOffset * 0.1,
+            bottom: h * 0.03,
             child: Column(
               children: [
                 Hero(
@@ -83,10 +115,7 @@ class AuthHeader extends StatelessWidget {
                     transitionBuilder: (child, animation) {
                       return FadeTransition(
                         opacity: animation,
-                        child: ScaleTransition(
-                          scale: animation,
-                          child: child,
-                        ),
+                        child: ScaleTransition(scale: animation, child: child),
                       );
                     },
                     child: Container(
@@ -105,7 +134,7 @@ class AuthHeader extends StatelessWidget {
                       ),
                       child: Icon(
                         tabIndex == 0 ? Icons.location_on : Icons.person_add,
-                        size: w * 0.08,
+                        size: w * 0.05,
                         color: greenColor,
                       ),
                     ),
@@ -127,11 +156,14 @@ class AuthHeader extends StatelessWidget {
                     );
                   },
                   child: Text(
-                    tabIndex == 0 ? "اكتشف الفيوم" : "إنشاء حساب جديد",
-                    key: ValueKey<int>(tabIndex),
+                    tabIndex == 0
+                        ? (isArabic ? "اكتشف الفيوم" : "Discover Fayoum")
+                        : (isArabic ? "إنشاء حساب جديد" : "Create New Account"),
+                    key: ValueKey('${tabIndex}_$isArabic'),
                     style: TextStyle(
                       fontSize: w * 0.06,
                       fontWeight: FontWeight.bold,
+                      color: Colors.black,
                       shadows: [
                         Shadow(
                           blurRadius: 6,

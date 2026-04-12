@@ -9,6 +9,7 @@ class SignupForm extends StatelessWidget {
   final bool obscurePassword;
   final bool obscureConfirmPassword;
   final Color mainColor;
+  final bool isArabic;
 
   final GlobalKey nameKey;
   final GlobalKey emailKey;
@@ -44,14 +45,22 @@ class SignupForm extends StatelessWidget {
     required this.onSubmit,
     required this.onTogglePassword,
     required this.onToggleConfirmPassword,
+    required this.isArabic,
   });
 
-  Widget _title(String text, double w) {
+  Widget _title(String text) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: w * 0.08),
       child: Align(
-        alignment: Alignment.centerRight,
-        child: Text(text),
+        alignment: isArabic ? Alignment.centerRight : Alignment.centerLeft,
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: w * 0.035,
+            color: const Color(0xFF202020),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
     );
   }
@@ -62,121 +71,144 @@ class SignupForm extends StatelessWidget {
       key: formKey,
       child: Column(
         children: [
-          _title("ادخل اسمك", w),
+          _title(isArabic ? "ادخل اسمك" : "Your Name"),
           AuthInputField(
             fieldKey: nameKey,
             w: w,
-            hint: "أدخل اسمك الكامل",
+            hint: isArabic ? "أدخل اسمك الكامل" : "Enter your full name",
             icon: Icons.person_outline,
             controller: nameController,
+            isArabic: isArabic,
             validator: (value) {
               if (!submitted) return null;
               if (value == null || value.trim().isEmpty) {
-                return "الاسم مطلوب";
+                return isArabic ? "الاسم مطلوب" : "Name is required";
               }
               return null;
             },
           ),
           const SizedBox(height: 10),
-          _title("البريد الإلكتروني", w),
+          _title(isArabic ? "البريد الإلكتروني" : "Email"),
           AuthInputField(
             fieldKey: emailKey,
             w: w,
-            hint: "أدخل بريدك الإلكتروني",
+            hint: isArabic ? "أدخل بريدك الإلكتروني" : "Enter your email",
             icon: Icons.email_outlined,
             controller: emailController,
             keyboardType: TextInputType.emailAddress,
+            isArabic: isArabic,
             validator: (value) {
               if (!submitted) return null;
               if (value == null || value.trim().isEmpty) {
-                return "البريد الإلكتروني مطلوب";
+                return isArabic ? "البريد الإلكتروني مطلوب" : "Email is required";
               }
               if (!value.contains('@')) {
-                return "البريد الإلكتروني غير صحيح";
+                return isArabic ? "البريد الإلكتروني غير صحيح" : "Invalid email";
               }
               return null;
             },
           ),
-          const SizedBox(height: 15),
-          _title("كلمة المرور", w),
+          const SizedBox(height: 10),
+          _title(isArabic ? "كلمة المرور" : "Password"),
           AuthInputField(
             fieldKey: passwordKey,
             w: w,
-            hint: "أدخل كلمة المرور",
+            hint: isArabic ? "أدخل كلمة المرور" : "Enter your password",
             icon: Icons.lock_outline,
             isPassword: true,
             obscureText: obscurePassword,
             onToggleObscure: onTogglePassword,
             controller: passwordController,
+            isArabic: isArabic,
             validator: (value) {
               if (!submitted) return null;
               if (value == null || value.isEmpty) {
-                return "كلمة المرور مطلوبة";
+                return isArabic ? "كلمة المرور مطلوبة" : "Password is required";
               }
               if (value.length < 6) {
-                return "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+                return isArabic
+                    ? "كلمة المرور يجب أن تكون 6 أحرف على الأقل"
+                    : "Password must be at least 6 characters";
               }
               return null;
             },
           ),
-          const SizedBox(height: 15),
-          _title("تأكيد كلمة المرور", w),
+          const SizedBox(height: 10),
+          _title(isArabic ? "تأكيد كلمة المرور" : "Confirm Password"),
           AuthInputField(
             fieldKey: confirmKey,
             w: w,
-            hint: "أعد إدخال كلمة المرور",
+            hint: isArabic ? "أعد إدخال كلمة المرور" : "Re-enter your password",
             icon: Icons.lock_outline,
             isPassword: true,
             obscureText: obscureConfirmPassword,
             onToggleObscure: onToggleConfirmPassword,
             controller: confirmController,
+            isArabic: isArabic,
             validator: (value) {
               if (!submitted) return null;
               if (value == null || value.isEmpty) {
-                return "تأكيد كلمة المرور مطلوب";
+                return isArabic
+                    ? "تأكيد كلمة المرور مطلوب"
+                    : "Confirm password is required";
               }
               if (value != passwordController.text) {
-                return "كلمة المرور غير متطابقة";
+                return isArabic
+                    ? "كلمة المرور غير متطابقة"
+                    : "Passwords do not match";
               }
               return null;
             },
           ),
-          const SizedBox(height: 25),
+          const SizedBox(height: 18),
           SizedBox(
-            width: w * 0.9,
-            height: 50,
+            width: w * 0.91,
+            height: 48,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: mainColor,
+                elevation: 4,
+                shadowColor: Colors.black.withOpacity(0.18),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(25),
                 ),
-                elevation: 6,
               ),
               onPressed: isLoading ? null : onSubmit,
               child: isLoading
                   ? const SizedBox(
                       width: 22,
-                      height: 22,
+                      height: 18,
                       child: CircularProgressIndicator(
-                        strokeWidth: 2,
                         color: Colors.white,
+                        strokeWidth: 2,
                       ),
                     )
                   : Text(
-                      "إنشاء حساب",
-                      style: TextStyle(fontSize: w * 0.045),
+                      isArabic ? "إنشاء حساب" : "Sign Up",
+                      style: TextStyle(
+                        fontSize: w * 0.045,
+                        color: const Color(0xFF6E5AA6),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: w * 0.08),
-            child: const Text(
-              "بالمتابعة أنت توافق على الشروط والأحكام وسياسة الخصوصية",
+            child: Text(
+              isArabic
+                  ? "بالمتابعة أنت توافق على الشروط والأحكام وسياسة الخصوصية"
+                  : "By continuing, you agree to the Terms & Conditions and Privacy Policy",
               textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: w * 0.030,
+                color: const Color(0xFF1F1F1F),
+                height: 1.4,
+              ),
             ),
           ),
+          const SizedBox(height: 12),
         ],
       ),
     );

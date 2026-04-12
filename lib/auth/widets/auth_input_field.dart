@@ -11,6 +11,7 @@ class AuthInputField extends StatelessWidget {
   final String? Function(String?)? validator;
   final TextEditingController? controller;
   final TextInputType? keyboardType;
+  final bool isArabic;
 
   const AuthInputField({
     super.key,
@@ -24,6 +25,7 @@ class AuthInputField extends StatelessWidget {
     this.validator,
     this.controller,
     this.keyboardType,
+    this.isArabic = true,
   });
 
   @override
@@ -36,7 +38,7 @@ class AuthInputField extends StatelessWidget {
         validator: validator,
         keyboardType: keyboardType,
         obscureText: isPassword ? obscureText : false,
-        textAlign: TextAlign.right,
+        textAlign: isArabic ? TextAlign.right : TextAlign.left,
         decoration: InputDecoration(
           hintText: hint,
           prefixIcon: Icon(icon),

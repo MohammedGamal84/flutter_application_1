@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/auth/home/home_screen.dart';
 import 'package:flutter_application_1/auth/screens/forgot_password_screen.dart';
 import 'package:flutter_application_1/auth/services/auth_service.dart';
 import 'package:flutter_application_1/auth/widets/auth_header.dart';
 import 'package:flutter_application_1/auth/widets/login_form.dart';
 import 'package:flutter_application_1/auth/widets/signup_form.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -23,13 +25,13 @@ class _AuthScreenState extends State<AuthScreen>
   bool _obscureLoginPassword = true;
   bool _obscureSignupPassword = true;
   bool _obscureSignupConfirmPassword = true;
+  bool _isArabic = true;
 
   late TabController _tabController;
   final ScrollController scrollController = ScrollController();
   double scrollOffset = 0.0;
 
-  final List<AuthParticle> particles =
-      List.generate(20, (_) => AuthParticle());
+  final List<AuthParticle> particles = List.generate(20, (_) => AuthParticle());
 
   final _loginFormKey = GlobalKey<FormState>();
   final _signupFormKey = GlobalKey<FormState>();
@@ -57,16 +59,44 @@ class _AuthScreenState extends State<AuthScreen>
   @override
   void initState() {
     super.initState();
+
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     });
 
     scrollController.addListener(() {
-      setState(() {
-        scrollOffset = scrollController.offset;
-      });
+      if (mounted) {
+        setState(() {
+          scrollOffset = scrollController.offset;
+        });
+      }
     });
+
+    _loadLanguage();
+  }
+
+  Future<void> _loadLanguage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedIsArabic = prefs.getBool('isArabic');
+
+    if (mounted) {
+      setState(() {
+        _isArabic = savedIsArabic ?? true;
+      });
+    }
+  }
+
+  Future<void> _toggleLanguage() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      _isArabic = !_isArabic;
+    });
+
+    await prefs.setBool('isArabic', _isArabic);
   }
 
   @override
@@ -87,10 +117,7 @@ class _AuthScreenState extends State<AuthScreen>
       _loginSubmitted = true;
     });
 
-    if (!_loginFormKey.currentState!.validate()) {
-      _scrollToFirstEmptyLogin();
-      return;
-    }
+    if (!_loginFormKey.currentState!.validate()) return;
 
     try {
       setState(() {
@@ -106,13 +133,20 @@ class _AuthScreenState extends State<AuthScreen>
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text(result["message"]?.toString() ?? "تم تسجيل الدخول بنجاح"),
+          content: Text(
+            result["message"]?.toString() ??
+                (_isArabic ? "تم تسجيل الدخول بنجاح" : "Login successful"),
+          ),
         ),
       );
 
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
     } catch (e) {
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString().replaceFirst("Exception: ", ""))),
       );
@@ -130,10 +164,7 @@ class _AuthScreenState extends State<AuthScreen>
       _signupSubmitted = true;
     });
 
-    if (!_signupFormKey.currentState!.validate()) {
-      _scrollToFirstEmptySignup();
-      return;
-    }
+    if (!_signupFormKey.currentState!.validate()) return;
 
     try {
       setState(() {
@@ -151,7 +182,12 @@ class _AuthScreenState extends State<AuthScreen>
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result["message"]?.toString() ?? "تم إنشاء الحساب بنجاح"),
+          content: Text(
+            result["message"]?.toString() ??
+                (_isArabic
+                    ? "تم إنشاء الحساب بنجاح"
+                    : "Account created successfully"),
+          ),
         ),
       );
 
@@ -163,6 +199,7 @@ class _AuthScreenState extends State<AuthScreen>
       _tabController.animateTo(0);
     } catch (e) {
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString().replaceFirst("Exception: ", ""))),
       );
@@ -175,54 +212,10 @@ class _AuthScreenState extends State<AuthScreen>
     }
   }
 
-  void _scrollToFirstEmptyLogin() {
-    final fields = [
-      {'key': _loginEmailKey, 'controller': _loginEmailController},
-      {'key': _loginPasswordKey, 'controller': _loginPasswordController},
-    ];
-
-    for (var field in fields) {
-      if ((field['controller'] as TextEditingController).text.trim().isEmpty) {
-        _scrollToKey(field['key'] as GlobalKey);
-        break;
-      }
-    }
-  }
-
-  void _scrollToFirstEmptySignup() {
-    final fields = [
-      {'key': _signupNameKey, 'controller': _signupNameController},
-      {'key': _signupEmailKey, 'controller': _signupEmailController},
-      {'key': _signupPasswordKey, 'controller': _signupPasswordController},
-      {'key': _signupConfirmKey, 'controller': _signupConfirmController},
-    ];
-
-    for (var field in fields) {
-      if ((field['controller'] as TextEditingController).text.trim().isEmpty) {
-        _scrollToKey(field['key'] as GlobalKey);
-        break;
-      }
-    }
-  }
-
-  void _scrollToKey(GlobalKey key) {
-    final currentContext = key.currentContext;
-    if (currentContext != null) {
-      Scrollable.ensureVisible(
-        currentContext,
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
-        alignment: 0.3,
-      );
-    }
-  }
-
   void _openForgotPassword() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => const ForgotPasswordScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
     );
   }
 
@@ -230,134 +223,179 @@ class _AuthScreenState extends State<AuthScreen>
   Widget build(BuildContext context) {
     final double w = MediaQuery.of(context).size.width;
     final double h = MediaQuery.of(context).size.height;
+    final double bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          controller: scrollController,
-          child: Column(
-            children: [
-              AuthHeader(
-                h: h,
-                w: w,
-                scrollOffset: scrollOffset,
-                tabIndex: _tabController.index,
-                greenColor: greenColor,
-                particles: particles,
-              ),
-              const SizedBox(height: 20),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: w * 0.06),
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: Stack(
-                    children: [
-                      AnimatedAlign(
-                        duration: const Duration(milliseconds: 400),
-                        alignment: _tabController.index == 0
-                            ? Alignment.centerLeft
-                            : Alignment.centerRight,
-                        curve: Curves.easeInOut,
-                        child: Container(
-                          width: w * 0.42,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(30),
-                            gradient: LinearGradient(
-                              colors: [mainColor.withOpacity(0.8), mainColor],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
+    return Directionality(
+      textDirection: _isArabic ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        resizeToAvoidBottomInset: true,
+        body: Column(
+          children: [
+            AuthHeader(
+              h: h,
+              w: w,
+              scrollOffset: scrollOffset,
+              tabIndex: _tabController.index,
+              greenColor: greenColor,
+              particles: particles,
+              isArabic: _isArabic,
+              onLanguageToggle: _toggleLanguage,
+            ),
+            Expanded(
+              child: SafeArea(
+                top: false,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: w * 0.03),
+                      child: Container(
+                        height: 50,
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE5E5E5),
+                          borderRadius: BorderRadius.circular(34),
+                        ),
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final tabWidth = (constraints.maxWidth - 8) / 2;
+
+                            return Stack(
+                              children: [
+                                AnimatedAlign(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                  alignment: _tabController.index == 0
+                                      ? AlignmentDirectional.centerStart
+                                      : AlignmentDirectional.centerEnd,
+                                  child: Container(
+                                    width: tabWidth,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: mainColor,
+                                      borderRadius: BorderRadius.circular(25),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.10),
+                                          blurRadius: 5,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                TabBar(
+                                  controller: _tabController,
+                                  indicatorColor: Colors.transparent,
+                                  dividerColor: Colors.transparent,
+                                  overlayColor: WidgetStateProperty.all(
+                                    Colors.transparent,
+                                  ),
+                                  labelColor: Colors.black,
+                                  unselectedLabelColor: greenColor,
+                                  labelStyle: TextStyle(
+                                    fontSize: w * 0.038,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  unselectedLabelStyle: TextStyle(
+                                    fontSize: w * 0.038,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  tabs: [
+                                    Tab(
+                                      text: _isArabic
+                                          ? "تسجيل الدخول"
+                                          : "Login",
+                                    ),
+                                    Tab(
+                                      text: _isArabic
+                                          ? "إنشاء حساب"
+                                          : "Sign Up",
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ),
-                      TabBar(
+                    ),
+                    const SizedBox(height: 18),
+                    Expanded(
+                      child: TabBarView(
                         controller: _tabController,
-                        indicatorColor: Colors.transparent,
-                        labelColor: Colors.black,
-                        unselectedLabelColor: greenColor,
-                        tabs: const [
-                          Tab(text: "تسجيل الدخول"),
-                          Tab(text: "إنشاء حساب"),
+                        children: [
+                          SingleChildScrollView(
+                            controller: scrollController,
+                            padding: EdgeInsets.only(bottom: bottomInset + 16),
+                            child: LoginForm(
+                              w: w,
+                              h: h,
+                              formKey: _loginFormKey,
+                              submitted: _loginSubmitted,
+                              isLoading: _isLoading,
+                              obscurePassword: _obscureLoginPassword,
+                              mainColor: mainColor,
+                              greenColor: greenColor,
+                              emailKey: _loginEmailKey,
+                              passwordKey: _loginPasswordKey,
+                              emailController: _loginEmailController,
+                              passwordController: _loginPasswordController,
+                              onSubmit: _submitLogin,
+                              onTogglePassword: () {
+                                setState(() {
+                                  _obscureLoginPassword =
+                                      !_obscureLoginPassword;
+                                });
+                              },
+                              onForgotPassword: _openForgotPassword,
+                              isArabic: _isArabic,
+                            ),
+                          ),
+                          SingleChildScrollView(
+                            controller: scrollController,
+                            padding: EdgeInsets.only(bottom: bottomInset + 16),
+                            child: SignupForm(
+                              w: w,
+                              formKey: _signupFormKey,
+                              submitted: _signupSubmitted,
+                              isLoading: _isLoading,
+                              obscurePassword: _obscureSignupPassword,
+                              obscureConfirmPassword:
+                                  _obscureSignupConfirmPassword,
+                              mainColor: mainColor,
+                              nameKey: _signupNameKey,
+                              emailKey: _signupEmailKey,
+                              passwordKey: _signupPasswordKey,
+                              confirmKey: _signupConfirmKey,
+                              nameController: _signupNameController,
+                              emailController: _signupEmailController,
+                              passwordController: _signupPasswordController,
+                              confirmController: _signupConfirmController,
+                              onSubmit: _submitSignup,
+                              onTogglePassword: () {
+                                setState(() {
+                                  _obscureSignupPassword =
+                                      !_obscureSignupPassword;
+                                });
+                              },
+                              onToggleConfirmPassword: () {
+                                setState(() {
+                                  _obscureSignupConfirmPassword =
+                                      !_obscureSignupConfirmPassword;
+                                });
+                              },
+                              isArabic: _isArabic,
+                            ),
+                          ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 25),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.6,
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    LoginForm(
-                      w: w,
-                      h: h,
-                      formKey: _loginFormKey,
-                      submitted: _loginSubmitted,
-                      isLoading: _isLoading,
-                      obscurePassword: _obscureLoginPassword,
-                      mainColor: mainColor,
-                      greenColor: greenColor,
-                      emailKey: _loginEmailKey,
-                      passwordKey: _loginPasswordKey,
-                      emailController: _loginEmailController,
-                      passwordController: _loginPasswordController,
-                      onSubmit: _submitLogin,
-                      onTogglePassword: () {
-                        setState(() {
-                          _obscureLoginPassword = !_obscureLoginPassword;
-                        });
-                      },
-                      onForgotPassword: _openForgotPassword,
-                    ),
-                    SignupForm(
-                      w: w,
-                      formKey: _signupFormKey,
-                      submitted: _signupSubmitted,
-                      isLoading: _isLoading,
-                      obscurePassword: _obscureSignupPassword,
-                      obscureConfirmPassword: _obscureSignupConfirmPassword,
-                      mainColor: mainColor,
-                      nameKey: _signupNameKey,
-                      emailKey: _signupEmailKey,
-                      passwordKey: _signupPasswordKey,
-                      confirmKey: _signupConfirmKey,
-                      nameController: _signupNameController,
-                      emailController: _signupEmailController,
-                      passwordController: _signupPasswordController,
-                      confirmController: _signupConfirmController,
-                      onSubmit: _submitSignup,
-                      onTogglePassword: () {
-                        setState(() {
-                          _obscureSignupPassword = !_obscureSignupPassword;
-                        });
-                      },
-                      onToggleConfirmPassword: () {
-                        setState(() {
-                          _obscureSignupConfirmPassword =
-                              !_obscureSignupConfirmPassword;
-                        });
-                      },
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

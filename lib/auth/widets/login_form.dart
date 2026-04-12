@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/auth/screens/forgot_password_screen.dart';
 import 'auth_input_field.dart';
 
 class LoginForm extends StatelessWidget {
@@ -11,6 +10,7 @@ class LoginForm extends StatelessWidget {
   final bool obscurePassword;
   final Color mainColor;
   final Color greenColor;
+  final bool isArabic;
 
   final GlobalKey emailKey;
   final GlobalKey passwordKey;
@@ -39,12 +39,23 @@ class LoginForm extends StatelessWidget {
     required this.onSubmit,
     required this.onTogglePassword,
     required this.onForgotPassword,
+    required this.isArabic,
   });
 
-  Widget _title(String text, double w) {
+  Widget _title(String text) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: w * 0.08),
-      child: Align(alignment: Alignment.centerRight, child: Text(text)),
+      child: Align(
+        alignment: isArabic ? Alignment.centerRight : Alignment.centerLeft,
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: w * 0.035,
+            color: const Color(0xFF202020),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
     );
   }
 
@@ -54,67 +65,64 @@ class LoginForm extends StatelessWidget {
       key: formKey,
       child: Column(
         children: [
-          _title("البريد الإلكتروني", w),
+          _title (isArabic ? "البريد الإلكتروني" : "Email"),
           AuthInputField(
             fieldKey: emailKey,
             w: w,
-            hint: "أدخل بريدك الإلكتروني",
+            hint: isArabic ? "أدخل بريدك الإلكتروني" : "Enter your email",
             icon: Icons.email_outlined,
             controller: emailController,
+            keyboardType: TextInputType.emailAddress,
+            isArabic: isArabic,
             validator: (value) {
               if (!submitted) return null;
-              if (value == null || value.isEmpty) {
-                return "البريد الإلكتروني مطلوب";
+              if (value == null || value.trim().isEmpty) {
+                return isArabic ? "البريد الإلكتروني مطلوب" : "Email is required";
               }
-              if (!value.contains('@')) return "البريد الإلكتروني غير صحيح";
+              if (!value.contains('@')) {
+                return isArabic ? "البريد الإلكتروني غير صحيح" : "Invalid email";
+              }
               return null;
             },
           ),
-          const SizedBox(height: 15),
-          _title("كلمة المرور", w),
+          const SizedBox(height: 18),
+          _title(isArabic ? "كلمة المرور" : "Password"),
           AuthInputField(
             fieldKey: passwordKey,
             w: w,
-            hint: "أدخل كلمة المرور",
+            hint: isArabic ? "أدخل كلمة المرور" : "Enter your password",
             icon: Icons.lock_outline,
             isPassword: true,
             obscureText: obscurePassword,
             onToggleObscure: onTogglePassword,
             controller: passwordController,
+            isArabic: isArabic,
             validator: (value) {
               if (!submitted) return null;
               if (value == null || value.isEmpty) {
-                return "كلمة المرور مطلوبة";
+                return isArabic ? "كلمة المرور مطلوبة" : "Password is required";
               }
               if (value.length < 6) {
-                return "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+                return isArabic
+                    ? "كلمة المرور يجب أن تكون 6 أحرف على الأقل"
+                    : "Password must be at least 6 characters";
               }
               return null;
             },
           ),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: w * 0.08, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: w * 0.08, vertical: 2),
             child: Align(
-              alignment: Alignment.centerLeft,
+              alignment: isArabic ? Alignment.centerLeft : Alignment.centerRight,
               child: InkWell(
-                borderRadius: BorderRadius.circular(10),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const ForgotPasswordScreen(),
-                    ),
-                  );
-                },
+                onTap: onForgotPassword,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 4,
-                    horizontal: 6,
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Text(
-                    "نسيت كلمة المرور؟",
+                    isArabic ? "نسيت كلمة المرور؟" : "Forgot password?",
                     style: TextStyle(
                       color: greenColor,
+                      fontSize: w * 0.030,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -122,18 +130,18 @@ class LoginForm extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 25),
+          const SizedBox(height: 16),
           SizedBox(
-            width: w * 0.9,
-            height: 50,
+            width: w * 0.91,
+            height: 48,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: mainColor,
+                elevation: 4,
+                shadowColor: Colors.black.withOpacity(0.18),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(25),
                 ),
-                elevation: 6,
-                shadowColor: Colors.black.withOpacity(0.2),
               ),
               onPressed: isLoading ? null : onSubmit,
               child: isLoading
@@ -141,37 +149,36 @@ class LoginForm extends StatelessWidget {
                       width: 22,
                       height: 22,
                       child: CircularProgressIndicator(
-                        strokeWidth: 2,
                         color: Colors.white,
+                        strokeWidth: 2,
                       ),
                     )
-                  : Text("تسجيل الدخول", style: TextStyle(fontSize: w * 0.045)),
+                  : Text(
+                      isArabic ? "تسجيل الدخول" : "Login",
+                      style: TextStyle(
+                        fontSize: w * 0.045,
+                        color: const Color(0xFF6E5AA6),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
             ),
           ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: w * 0.9,
-            height: h * 0.050,
-            child: OutlinedButton.icon(
-              icon: const Icon(Icons.person_outline),
-              label: const Text("الدخول كزائر"),
-              onPressed: () {},
-              style: OutlinedButton.styleFrom(
-                backgroundColor: mainColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
+          const SizedBox(height: 18),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: w * 0.08),
+            child: Text(
+              isArabic
+                  ? "بالمتابعة أنت توافق على الشروط والأحكام وسياسة الخصوصية"
+                  : "By continuing, you agree to the Terms & Conditions and Privacy Policy",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: w * 0.030,
+                color: const Color(0xFF1F1F1F),
+                height: 1.4,
               ),
             ),
           ),
-          const SizedBox(height: 20),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: w * 0.08),
-            child: const Text(
-              "بالمتابعة أنت توافق على الشروط والأحكام وسياسة الخصوصية",
-              textAlign: TextAlign.center,
-            ),
-          ),
+          const SizedBox(height: 12),
         ],
       ),
     );
