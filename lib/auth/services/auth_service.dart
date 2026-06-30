@@ -1,29 +1,63 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_application_1/auth/services/api_service.dart';
+import 'package:flutter_application_1/core/auth_storge.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 class AuthService {
+
   final ApiService _apiService = ApiService();
 
   /// LOGIN
-  Future<Map<String, dynamic>> login({
-    required String email,
-    required String password,
-  }) async {
+ Future<Map<String, dynamic>> login({
+  required String email,
+  required String password,
+}) async {
+
+  try {
+
     final response = await _apiService.dio.post(
       '/auth/login',
-      data: {"email": email, "password": password},
+      data: {
+        "email": email,
+        "password": password,
+      },
     );
 
-    final data = Map<String, dynamic>.from(response.data);
+    print("======================");
+    print("STATUS CODE:");
+    print(response.statusCode);
 
-    if (data["token"] != null) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString("token", data["token"]);
-    }
+    print("======================");
+    print("DATA:");
+    print(response.data);
 
-    return data;
+    print("======================");
+    print("HEADERS:");
+    print(response.headers);
+
+    print("======================");
+
+    final data = response.data;
+
+    return Map<String, dynamic>.from(data);
+
+  } on DioException catch (e) {
+
+    print("DIO ERROR:");
+    print(e.response?.data);
+    print(e.response?.statusCode);
+
+    throw Exception(
+      e.response?.data.toString() ?? "Login failed",
+    );
+
+  } catch (e) {
+
+    print("NORMAL ERROR:");
+    print(e);
+
+    rethrow;
   }
+}
 
   /// SIGNUP
   Future<Map<String, dynamic>> signup({
@@ -32,6 +66,7 @@ class AuthService {
     required String password,
     required String passwordConfirm,
   }) async {
+
     final response = await _apiService.dio.post(
       '/auth/signup',
       data: {
@@ -45,25 +80,29 @@ class AuthService {
     return Map<String, dynamic>.from(response.data);
   }
 
-  /// 🔥 Forgot Password
+  /// Forgot Password
   Future<Map<String, dynamic>> forgotPassword({
     required String email,
   }) async {
+
     final response = await _apiService.dio.post(
       '/auth/forgotPassword',
-      data: {"email": email},
+      data: {
+        "email": email,
+      },
     );
 
     return Map<String, dynamic>.from(response.data);
   }
 
-  /// 🔥 Reset Password
+  /// Reset Password
   Future<Map<String, dynamic>> resetPassword({
     required String email,
     required String code,
     required String password,
     required String passwordConfirm,
   }) async {
+
     final response = await _apiService.dio.post(
       '/auth/resetPassword',
       data: {
@@ -79,8 +118,8 @@ class AuthService {
 
   /// LOGOUT
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove("token");
+
+    await AuthStorage.logout();
   }
 
   /// GET TOKEN
@@ -89,3 +128,5 @@ class AuthService {
   return prefs.getString("token");
 }
 }
+
+

@@ -2,6 +2,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/auth/services/auth_service.dart';
 import 'package:flutter_application_1/auth/widets/auth_input_field.dart';
+import 'package:flutter_application_1/core/localization/app_language.dart';
+import 'package:flutter_application_1/core/localization/app_localizations.dart';
+import 'package:provider/provider.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String email;
@@ -71,6 +74,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       return;
     }
 
+    final tr = AppLocalizations.of(context);
+
     try {
       setState(() {
         _isLoading = true;
@@ -87,8 +92,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text(result["message"]?.toString() ?? "تم تغيير كلمة المرور بنجاح"),
+          content: Text(
+            result["message"]?.toString() ??
+                tr.translate('reset_password_success'),
+          ),
         ),
       );
 
@@ -139,274 +146,274 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = AppLocalizations.of(context);
+    final isArabic = context.watch<AppLanguage>().locale.languageCode == 'ar';
     final double w = MediaQuery.of(context).size.width;
     final double h = MediaQuery.of(context).size.height;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          controller: scrollController,
-          child: Column(
-            children: [
-              SizedBox(
-                height: h * 0.35,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Transform.translate(
-                      offset: Offset(0, scrollOffset * 0.2),
-                      child: Container(
-                        width: double.infinity,
-                        height: double.infinity,
-                        decoration: const BoxDecoration(
-                          image: DecorationImage(
-                            image: AssetImage('assets/images/gemy2.jpg'),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.white.withOpacity(0.9),
-                          ],
-                        ),
-                      ),
-                    ),
-                    ...particles.map((p) {
-                      return Positioned(
-                        left: p.x * w,
-                        top: ((p.y + scrollOffset * 0.05) % 1) * h * 0.35,
-                        child: Opacity(
-                          opacity: p.opacity,
-                          child: Container(
-                            width: p.size,
-                            height: p.size,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.7),
-                              shape: BoxShape.circle,
+    return Directionality(
+      textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            controller: scrollController,
+            child: Column(
+              children: [
+                SizedBox(
+                  height: h * 0.35,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Transform.translate(
+                        offset: Offset(0, scrollOffset * 0.2),
+                        child: Container(
+                          width: double.infinity,
+                          height: double.infinity,
+                          decoration: const BoxDecoration(
+                            image: DecorationImage(
+                              image: AssetImage('assets/images/gemy2.jpg'),
+                              fit: BoxFit.cover,
                             ),
                           ),
                         ),
-                      );
-                    }).toList(),
-                    Positioned(
-                      bottom: h * 0.03 - scrollOffset * 0.1,
-                      child: Column(
-                        children: [
-                          Hero(
-                            tag: 'auth_icon',
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.white.withOpacity(0.9),
+                            ],
+                          ),
+                        ),
+                      ),
+                      ...particles.map((p) {
+                        return Positioned(
+                          left: p.x * w,
+                          top: ((p.y + scrollOffset * 0.05) % 1) * h * 0.35,
+                          child: Opacity(
+                            opacity: p.opacity,
                             child: Container(
-                              padding: EdgeInsets.all(w * 0.035),
+                              width: p.size,
+                              height: p.size,
                               decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
+                                color: Colors.white.withOpacity(0.7),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                      Positioned(
+                        bottom: h * 0.03 - scrollOffset * 0.1,
+                        child: Column(
+                          children: [
+                            Hero(
+                              tag: 'auth_icon',
+                              child: Container(
+                                padding: EdgeInsets.all(w * 0.035),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Icon(
+                                  Icons.lock_outline,
+                                  size: w * 0.08,
+                                  color: greenColor,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              tr.translate('reset_password_title'),
+                              style: TextStyle(
+                                fontSize: w * 0.06,
+                                fontWeight: FontWeight.bold,
+                                shadows: [
+                                  Shadow(
                                     blurRadius: 6,
-                                    offset: const Offset(0, 3),
+                                    color: Colors.black.withOpacity(0.2),
+                                    offset: const Offset(0, 2),
                                   ),
                                 ],
                               ),
-                              child: Icon(
-                                Icons.lock_outline,
-                                size: w * 0.08,
-                                color: greenColor,
-                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            "تغيير كلمة المرور",
-                            style: TextStyle(
-                              fontSize: w * 0.06,
-                              fontWeight: FontWeight.bold,
-                              shadows: [
-                                Shadow(
-                                  blurRadius: 6,
-                                  color: Colors.black.withOpacity(0.2),
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: w * 0.06),
-                child: Container(
-                  width: double.infinity,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: mainColor,
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    "إعادة تعيين كلمة المرور",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                ),
+                const SizedBox(height: 20),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: w * 0.06),
+                  child: Container(
+                    width: double.infinity,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: mainColor,
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      tr.translate('reset_password_header'),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 25),
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: w * 0.08),
-                      child: Text(
-                        "البريد الإلكتروني: ${widget.email}",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.grey.shade700,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: w * 0.08),
-                      child: const Align(
-                        alignment: Alignment.centerRight,
-                        child: Text("الكود"),
-                      ),
-                    ),
-                    AuthInputField(
-                      fieldKey: _codeKey,
-                      w: w,
-                      hint: "أدخل الكود المرسل",
-                      icon: Icons.verified_user_outlined,
-                      controller: _codeController,
-                      validator: (value) {
-                        if (!_submitted) return null;
-                        if (value == null || value.trim().isEmpty) {
-                          return "الكود مطلوب";
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 15),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: w * 0.08),
-                      child: const Align(
-                        alignment: Alignment.centerRight,
-                        child: Text("كلمة المرور الجديدة"),
-                      ),
-                    ),
-                    AuthInputField(
-                      fieldKey: _passwordKey,
-                      w: w,
-                      hint: "أدخل كلمة المرور الجديدة",
-                      icon: Icons.lock_outline,
-                      controller: _passwordController,
-                      isPassword: true,
-                      obscureText: _obscurePassword,
-                      onToggleObscure: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
-                      validator: (value) {
-                        if (!_submitted) return null;
-                        if (value == null || value.isEmpty) {
-                          return "كلمة المرور الجديدة مطلوبة";
-                        }
-                        if (value.length < 6) {
-                          return "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 15),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: w * 0.08),
-                      child: const Align(
-                        alignment: Alignment.centerRight,
-                        child: Text("تأكيد كلمة المرور"),
-                      ),
-                    ),
-                    AuthInputField(
-                      fieldKey: _confirmPasswordKey,
-                      w: w,
-                      hint: "أعد إدخال كلمة المرور الجديدة",
-                      icon: Icons.lock_outline,
-                      controller: _confirmPasswordController,
-                      isPassword: true,
-                      obscureText: _obscureConfirmPassword,
-                      onToggleObscure: () {
-                        setState(() {
-                          _obscureConfirmPassword =
-                              !_obscureConfirmPassword;
-                        });
-                      },
-                      validator: (value) {
-                        if (!_submitted) return null;
-                        if (value == null || value.isEmpty) {
-                          return "تأكيد كلمة المرور مطلوب";
-                        }
-                        if (value != _passwordController.text) {
-                          return "كلمة المرور غير متطابقة";
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 25),
-                    SizedBox(
-                      width: w * 0.9,
-                      height: 50,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: mainColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                const SizedBox(height: 25),
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: w * 0.08),
+                        child: Text(
+                          "${tr.translate('email_label_with_value')}${widget.email}",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontWeight: FontWeight.w500,
                           ),
-                          elevation: 6,
-                          shadowColor: Colors.black.withOpacity(0.2),
                         ),
-                        onPressed: _isLoading ? null : _submitResetPassword,
-                        child: _isLoading
-                            ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : Text(
-                                "تغيير كلمة المرور",
-                                style: TextStyle(fontSize: w * 0.045),
-                              ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
+                      const SizedBox(height: 20),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: w * 0.08),
+                        child: Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Text(tr.translate('reset_code')),
+                        ),
+                      ),
+                      AuthInputField(
+                        fieldKey: _codeKey,
+                        w: w,
+                        hint: tr.translate('enter_reset_code'),
+                        icon: Icons.verified_user_outlined,
+                        controller: _codeController,
+                        validator: (value) {
+                          if (!_submitted) return null;
+                          if (value == null || value.trim().isEmpty) {
+                            return tr.translate('code_required');
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 15),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: w * 0.08),
+                        child: Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Text(tr.translate('new_password')),
+                        ),
+                      ),
+                      AuthInputField(
+                        fieldKey: _passwordKey,
+                        w: w,
+                        hint: tr.translate('enter_new_password'),
+                        icon: Icons.lock_outline,
+                        controller: _passwordController,
+                        isPassword: true,
+                        obscureText: _obscurePassword,
+                        onToggleObscure: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                        validator: (value) {
+                          if (!_submitted) return null;
+                          if (value == null || value.isEmpty) {
+                            return tr.translate('new_password_required');
+                          }
+                          if (value.length < 6) {
+                            return tr.translate('password_short');
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 15),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: w * 0.08),
+                        child: Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Text(tr.translate('confirm_new_password')),
+                        ),
+                      ),
+                      AuthInputField(
+                        fieldKey: _confirmPasswordKey,
+                        w: w,
+                        hint: tr.translate('reenter_new_password'),
+                        icon: Icons.lock_outline,
+                        controller: _confirmPasswordController,
+                        isPassword: true,
+                        obscureText: _obscureConfirmPassword,
+                        onToggleObscure: () {
+                          setState(() {
+                            _obscureConfirmPassword =
+                                !_obscureConfirmPassword;
+                          });
+                        },
+                        validator: (value) {
+                          if (!_submitted) return null;
+                          if (value == null || value.isEmpty) {
+                            return tr.translate('confirm_password_required');
+                          }
+                          if (value != _passwordController.text) {
+                            return tr.translate('passwords_not_match');
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 25),
+                      SizedBox(
+                        width: w * 0.9,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _submitResetPassword,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: mainColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : Text(
+                                  tr.translate('reset_password_header'),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -417,6 +424,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 class _Particle {
   double x = Random().nextDouble();
   double y = Random().nextDouble();
-  double size = Random().nextDouble() * 4 + 2;
-  double opacity = Random().nextDouble() * 0.5 + 0.3;
+  double size = Random().nextDouble() * 6 + 2;
+  double opacity = Random().nextDouble() * 0.6 + 0.2;
 }

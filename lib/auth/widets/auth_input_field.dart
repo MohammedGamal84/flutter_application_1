@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/localization/app_language.dart';
+import 'package:provider/provider.dart';
 
 class AuthInputField extends StatelessWidget {
   final Key? fieldKey;
@@ -11,7 +13,6 @@ class AuthInputField extends StatelessWidget {
   final String? Function(String?)? validator;
   final TextEditingController? controller;
   final TextInputType? keyboardType;
-  final bool isArabic;
 
   const AuthInputField({
     super.key,
@@ -25,11 +26,13 @@ class AuthInputField extends StatelessWidget {
     this.validator,
     this.controller,
     this.keyboardType,
-    this.isArabic = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isArabic =
+        context.watch<AppLanguage>().locale.languageCode == 'ar';
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: w * 0.06, vertical: 6),
       child: TextFormField(

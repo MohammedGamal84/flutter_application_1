@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_application_1/auth/services/auth_service.dart';
+import 'package:flutter_application_1/core/localization/app_language.dart';
+import 'package:flutter_application_1/core/localization/app_localizations.dart';
+import 'package:provider/provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -73,73 +76,81 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFF9F6F1),
-              Color(0xFFF0E2D2),
-              Color(0xFFE7D5BF),
-            ],
+    final tr = AppLocalizations.of(context);
+    final isArabic = context.watch<AppLanguage>().locale.languageCode == 'ar';
+
+    return Directionality(
+      textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFFF9F6F1),
+                Color(0xFFF0E2D2),
+                Color(0xFFE7D5BF),
+              ],
+            ),
           ),
-        ),
-        child: Center(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 220,
-                    height: 220,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.72),
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
-                          blurRadius: 18,
-                          offset: const Offset(0, 8),
+          child: Center(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: ScaleTransition(
+                scale: _scaleAnimation,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 220,
+                      height: 220,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.72),
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 18,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(22),
+                        child: Image.asset(
+                          'assets/images/logo.jpg',
+                          fit: BoxFit.contain,
                         ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(22),
-                      child: Image.asset(
-                        'assets/images/logo.jpg',
-                        fit: BoxFit.contain,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 26),
-                  const Text(
-                    'اكتشف الفيوم',
-                    style: TextStyle(
-                      fontSize: 30,
-                      color: Color(0xFFAF7741),
-                      fontWeight: FontWeight.bold,
+                    const SizedBox(height: 26),
+                    Text(
+                      tr.translate('splash_title'),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 30,
+                        color: Color(0xFFAF7741),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'رحلة إلى جمال الطبيعة',
-                    style: TextStyle(
-                      fontSize: 17,
-                      color: Color(0xFF4F925A),
-                      fontWeight: FontWeight.w500,
+                    const SizedBox(height: 10),
+                    Text(
+                      tr.translate('splash_subtitle'),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        color: Color(0xFF4F925A),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 34),
-                  const DotsLoading(),
-                ],
+                    const SizedBox(height: 34),
+                    const DotsLoading(),
+                  ],
+                ),
               ),
             ),
           ),
@@ -204,6 +215,7 @@ class _DotsLoadingState extends State<DotsLoading>
   @override
   Widget build(BuildContext context) {
     return Row(
+      textDirection: Directionality.of(context),
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         buildDot(0.0),

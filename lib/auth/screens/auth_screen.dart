@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/auth/home/home_screen.dart';
+import 'package:flutter_application_1/admin/admin_dashboard_screen.dart';
 import 'package:flutter_application_1/auth/screens/forgot_password_screen.dart';
 import 'package:flutter_application_1/auth/services/auth_service.dart';
+import 'package:flutter_application_1/core/auth_storge.dart';
 import 'package:flutter_application_1/auth/widets/auth_header.dart';
 import 'package:flutter_application_1/auth/widets/login_form.dart';
 import 'package:flutter_application_1/auth/widets/signup_form.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_application_1/core/localization/app_language.dart';
+import 'package:flutter_application_1/core/localization/app_localizations.dart';
+import 'package:provider/provider.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -25,7 +28,6 @@ class _AuthScreenState extends State<AuthScreen>
   bool _obscureLoginPassword = true;
   bool _obscureSignupPassword = true;
   bool _obscureSignupConfirmPassword = true;
-  bool _isArabic = true;
 
   late TabController _tabController;
   final ScrollController scrollController = ScrollController();
@@ -74,29 +76,6 @@ class _AuthScreenState extends State<AuthScreen>
         });
       }
     });
-
-    _loadLanguage();
-  }
-
-  Future<void> _loadLanguage() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedIsArabic = prefs.getBool('isArabic');
-
-    if (mounted) {
-      setState(() {
-        _isArabic = savedIsArabic ?? true;
-      });
-    }
-  }
-
-  Future<void> _toggleLanguage() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    setState(() {
-      _isArabic = !_isArabic;
-    });
-
-    await prefs.setBool('isArabic', _isArabic);
   }
 
   @override
@@ -113,51 +92,84 @@ class _AuthScreenState extends State<AuthScreen>
   }
 
   Future<void> _submitLogin() async {
+
+  setState(() {
+    _loginSubmitted = true;
+  });
+
+  if (!_loginFormKey.currentState!.validate()) return;
+
+  final tr = AppLocalizations.of(context);
+
+  try {
+
     setState(() {
-      _loginSubmitted = true;
+      _isLoading = true;
     });
 
-    if (!_loginFormKey.currentState!.validate()) return;
+    final result = await _authService.login(
+      email: _loginEmailController.text.trim(),
+      password: _loginPasswordController.text.trim(),
+    );
 
-    try {
-      setState(() {
-        _isLoading = true;
-      });
+    if (!mounted) return;
 
-      final result = await _authService.login(
-        email: _loginEmailController.text.trim(),
-        password: _loginPasswordController.text.trim(),
-      );
 
-      if (!mounted) return;
+ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+    content: Text(
+      result["message"]?.toString() ??
+          tr.translate('login_success'),
+    ),
+  ),
+);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            result["message"]?.toString() ??
-                (_isArabic ? "تم تسجيل الدخول بنجاح" : "Login successful"),
-          ),
+final user = result["data"]["user"];
+
+await AuthStorage.saveUserId(user["_id"]);
+
+await AuthStorage.saveUserData(
+  token: "", // مفيش token في الـ response عندك
+  userId: user["_id"].toString(),
+  role: user["role"].toString(),
+);
+
+final role = user["role"];
+
+if (role == "admin") {
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const AdminDashboardScreen(),
+    ),
+  );
+} else {
+  Navigator.pushReplacementNamed(
+    context, "/home");
+}
+
+
+  } catch (e) {
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          e.toString().replaceFirst("Exception: ", ""),
         ),
-      );
+      ),
+    );
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
-    } catch (e) {
-      if (!mounted) return;
+  } finally {
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst("Exception: ", ""))),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
+}
 
   Future<void> _submitSignup() async {
     setState(() {
@@ -165,6 +177,8 @@ class _AuthScreenState extends State<AuthScreen>
     });
 
     if (!_signupFormKey.currentState!.validate()) return;
+
+    final tr = AppLocalizations.of(context);
 
     try {
       setState(() {
@@ -183,10 +197,7 @@ class _AuthScreenState extends State<AuthScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            result["message"]?.toString() ??
-                (_isArabic
-                    ? "تم إنشاء الحساب بنجاح"
-                    : "Account created successfully"),
+            result["message"]?.toString() ?? tr.translate('signup_success'),
           ),
         ),
       );
@@ -221,12 +232,16 @@ class _AuthScreenState extends State<AuthScreen>
 
   @override
   Widget build(BuildContext context) {
+    final appLanguage = context.watch<AppLanguage>();
+    final tr = AppLocalizations.of(context);
+    final isArabic = appLanguage.locale.languageCode == 'ar';
+
     final double w = MediaQuery.of(context).size.width;
     final double h = MediaQuery.of(context).size.height;
     final double bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Directionality(
-      textDirection: _isArabic ? TextDirection.rtl : TextDirection.ltr,
+      textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: Colors.white,
         resizeToAvoidBottomInset: true,
@@ -239,8 +254,10 @@ class _AuthScreenState extends State<AuthScreen>
               tabIndex: _tabController.index,
               greenColor: greenColor,
               particles: particles,
-              isArabic: _isArabic,
-              onLanguageToggle: _toggleLanguage,
+              isArabic: isArabic,
+              onLanguageToggle: () async {
+                await context.read<AppLanguage>().toggleLanguage();
+              },
             ),
             Expanded(
               child: SafeArea(
@@ -302,16 +319,8 @@ class _AuthScreenState extends State<AuthScreen>
                                     fontWeight: FontWeight.w400,
                                   ),
                                   tabs: [
-                                    Tab(
-                                      text: _isArabic
-                                          ? "تسجيل الدخول"
-                                          : "Login",
-                                    ),
-                                    Tab(
-                                      text: _isArabic
-                                          ? "إنشاء حساب"
-                                          : "Sign Up",
-                                    ),
+                                    Tab(text: tr.translate('login')),
+                                    Tab(text: tr.translate('signup')),
                                   ],
                                 ),
                               ],
@@ -349,7 +358,7 @@ class _AuthScreenState extends State<AuthScreen>
                                 });
                               },
                               onForgotPassword: _openForgotPassword,
-                              isArabic: _isArabic,
+                              isArabic: isArabic,
                             ),
                           ),
                           SingleChildScrollView(
@@ -385,7 +394,7 @@ class _AuthScreenState extends State<AuthScreen>
                                       !_obscureSignupConfirmPassword;
                                 });
                               },
-                              isArabic: _isArabic,
+                              isArabic: isArabic,
                             ),
                           ),
                         ],

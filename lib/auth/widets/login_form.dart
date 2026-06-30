@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/localization/app_localizations.dart';
 import 'auth_input_field.dart';
 
 class LoginForm extends StatelessWidget {
@@ -61,51 +62,49 @@ class LoginForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = AppLocalizations.of(context);
+
     return Form(
       key: formKey,
       child: Column(
         children: [
-          _title (isArabic ? "البريد الإلكتروني" : "Email"),
+          _title(tr.translate('email')),
           AuthInputField(
             fieldKey: emailKey,
             w: w,
-            hint: isArabic ? "أدخل بريدك الإلكتروني" : "Enter your email",
+            hint: tr.translate('enter_email'),
             icon: Icons.email_outlined,
             controller: emailController,
             keyboardType: TextInputType.emailAddress,
-            isArabic: isArabic,
             validator: (value) {
               if (!submitted) return null;
               if (value == null || value.trim().isEmpty) {
-                return isArabic ? "البريد الإلكتروني مطلوب" : "Email is required";
+                return tr.translate('email_required');
               }
               if (!value.contains('@')) {
-                return isArabic ? "البريد الإلكتروني غير صحيح" : "Invalid email";
+                return tr.translate('invalid_email');
               }
               return null;
             },
           ),
           const SizedBox(height: 18),
-          _title(isArabic ? "كلمة المرور" : "Password"),
+          _title(tr.translate('password')),
           AuthInputField(
             fieldKey: passwordKey,
             w: w,
-            hint: isArabic ? "أدخل كلمة المرور" : "Enter your password",
+            hint: tr.translate('enter_password'),
             icon: Icons.lock_outline,
             isPassword: true,
             obscureText: obscurePassword,
             onToggleObscure: onTogglePassword,
             controller: passwordController,
-            isArabic: isArabic,
             validator: (value) {
               if (!submitted) return null;
               if (value == null || value.isEmpty) {
-                return isArabic ? "كلمة المرور مطلوبة" : "Password is required";
+                return tr.translate('password_required');
               }
               if (value.length < 6) {
-                return isArabic
-                    ? "كلمة المرور يجب أن تكون 6 أحرف على الأقل"
-                    : "Password must be at least 6 characters";
+                return tr.translate('password_short');
               }
               return null;
             },
@@ -119,7 +118,7 @@ class LoginForm extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Text(
-                    isArabic ? "نسيت كلمة المرور؟" : "Forgot password?",
+                    tr.translate('forgot_password'),
                     style: TextStyle(
                       color: greenColor,
                       fontSize: w * 0.030,
@@ -154,7 +153,7 @@ class LoginForm extends StatelessWidget {
                       ),
                     )
                   : Text(
-                      isArabic ? "تسجيل الدخول" : "Login",
+                      tr.translate('login'),
                       style: TextStyle(
                         fontSize: w * 0.045,
                         color: const Color(0xFF6E5AA6),
@@ -167,18 +166,15 @@ class LoginForm extends StatelessWidget {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: w * 0.08),
             child: Text(
-              isArabic
-                  ? "بالمتابعة أنت توافق على الشروط والأحكام وسياسة الخصوصية"
-                  : "By continuing, you agree to the Terms & Conditions and Privacy Policy",
+              tr.translate('terms_text'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: w * 0.030,
-                color: const Color(0xFF1F1F1F),
-                height: 1.4,
+                color: Colors.grey.shade600,
+                height: 1.5,
               ),
             ),
           ),
-          const SizedBox(height: 12),
         ],
       ),
     );

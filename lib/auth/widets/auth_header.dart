@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/localization/app_localizations.dart';
 
 class AuthHeader extends StatelessWidget {
   final double h;
@@ -25,6 +26,7 @@ class AuthHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = AppLocalizations.of(context);
     final double headerHeight = h * 0.42;
     final double topInset = MediaQuery.of(context).padding.top;
 
@@ -69,8 +71,8 @@ class AuthHeader extends StatelessWidget {
             child: GestureDetector(
               onTap: onLanguageToggle,
               child: Container(
-                width: w * 0.08,
-                height: w * 0.08,
+                width: w * 0.10,
+                height: w * 0.10,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.8),
                   shape: BoxShape.circle,
@@ -82,8 +84,11 @@ class AuthHeader extends StatelessWidget {
                     ),
                   ],
                 ),
-
-                child: Icon(Icons.language, size: w * 0.04, color: Colors.black87),
+                child: Icon(
+                  Icons.language,
+                  size: w * 0.05,
+                  color: Colors.black87,
+                ),
               ),
             ),
           ),
@@ -103,7 +108,7 @@ class AuthHeader extends StatelessWidget {
                 ),
               ),
             );
-          }).toList(),
+          }),
           Positioned(
             bottom: h * 0.03,
             child: Column(
@@ -157,9 +162,9 @@ class AuthHeader extends StatelessWidget {
                   },
                   child: Text(
                     tabIndex == 0
-                        ? (isArabic ? "اكتشف الفيوم" : "Discover Fayoum")
-                        : (isArabic ? "إنشاء حساب جديد" : "Create New Account"),
-                    key: ValueKey('${tabIndex}_$isArabic'),
+                        ? tr.translate('discover_fayoum')
+                        : tr.translate('create_new_account'),
+                    key: ValueKey('${tabIndex}_${isArabic ? "ar" : "en"}'),
                     style: TextStyle(
                       fontSize: w * 0.06,
                       fontWeight: FontWeight.bold,
@@ -186,6 +191,6 @@ class AuthHeader extends StatelessWidget {
 class AuthParticle {
   double x = Random().nextDouble();
   double y = Random().nextDouble();
-  double size = Random().nextDouble() * 4 + 2;
-  double opacity = Random().nextDouble() * 0.5 + 0.3;
+  double size = Random().nextDouble() * 6 + 2;
+  double opacity = Random().nextDouble() * 0.6 + 0.2;
 }

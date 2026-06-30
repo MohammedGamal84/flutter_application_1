@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_application_1/auth/screens/auth_screen.dart';
+import 'package:flutter_application_1/core/localization/app_language.dart';
+import 'package:flutter_application_1/core/localization/app_localizations.dart';
 import 'package:flutter_application_1/models_onbord/onbord_items.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -13,31 +16,6 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _controller = PageController();
   int currentPage = 0;
-
-  final List<OnboardingItem> pages = const [
-    OnboardingItem(
-      title: 'اكتشف الفيوم',
-      subtitle:
-          'استمتع بجمال الطبيعة والآثار الفريدة في الفيوم، واكتشف أماكن ساحرة وتجارب لا تُنسى',
-      imagePath: 'assets/images/image3.jpg',
-    ),
-    OnboardingItem(
-      title: 'استكشف المعالم',
-      subtitle:
-          'تعرّف على أشهر المعالم السياحية والأثرية والوجهات المميزة داخل الفيوم بسهولة',
-      imagePath: 'assets/images/image2.jpg',
-    ),
-    OnboardingItem(
-      title: 'خطط رحلتك',
-      subtitle: 'نظّم زيارتك واحفظ الأماكن المفضلة لديك للوصول إلى تجربة أفضل',
-      imagePath: 'assets/images/image4.jpg',
-    ),
-    OnboardingItem(
-      title: 'ابدأ المغامرة',
-      subtitle: 'ابدأ الآن واستمتع بتجربة سياحية متكاملة داخل الفيوم',
-      imagePath: 'assets/images/image1.jpg',
-    ),
-  ];
 
   Future<void> goToAuth() async {
     final prefs = await SharedPreferences.getInstance();
@@ -51,8 +29,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  void nextPage() {
-    if (currentPage < pages.length - 1) {
+  void nextPage(int length) {
+    if (currentPage < length - 1) {
       _controller.nextPage(
         duration: const Duration(milliseconds: 350),
         curve: Curves.easeInOut,
@@ -83,11 +61,37 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tr = AppLocalizations.of(context);
+    final isArabic = context.watch<AppLanguage>().locale.languageCode == 'ar';
+
+    final List<OnboardingItem> pages = const [
+      OnboardingItem(
+        titleKey: 'onboarding_title_1',
+        subtitleKey: 'onboarding_subtitle_1',
+        imagePath: 'assets/images/image3.jpg',
+      ),
+      OnboardingItem(
+        titleKey: 'onboarding_title_2',
+        subtitleKey: 'onboarding_subtitle_2',
+        imagePath: 'assets/images/image2.jpg',
+      ),
+      OnboardingItem(
+        titleKey: 'onboarding_title_3',
+        subtitleKey: 'onboarding_subtitle_3',
+        imagePath: 'assets/images/image4.jpg',
+      ),
+      OnboardingItem(
+        titleKey: 'onboarding_title_4',
+        subtitleKey: 'onboarding_subtitle_4',
+        imagePath: 'assets/images/image1.jpg',
+      ),
+    ];
+
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: const Color(0xFFFCFCFC),
         body: SafeArea(
@@ -99,12 +103,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 22),
                     child: Align(
-                      alignment: Alignment.centerLeft,
+                      alignment: AlignmentDirectional.centerStart,
                       child: TextButton(
                         onPressed: skip,
-                        child: const Text(
-                          'تخطي',
-                          style: TextStyle(
+                        child: Text(
+                          tr.translate('skip'),
+                          style: const TextStyle(
                             fontSize: 18,
                             color: Color(0xFF666666),
                             fontWeight: FontWeight.w500,
@@ -165,7 +169,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 20),
                               child: Text(
-                                page.title,
+                                tr.translate(page.titleKey),
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
                                   fontSize: 30,
@@ -179,7 +183,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 34),
                               child: Text(
-                                page.subtitle,
+                                tr.translate(page.subtitleKey),
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
                                   fontSize: 16,
@@ -220,12 +224,40 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 22),
                     child: Row(
+                      textDirection:
+                          isArabic ? TextDirection.rtl : TextDirection.ltr,
                       children: [
+                        if (currentPage > 0)
+                          Expanded(
+                            child: SizedBox(
+                              height: 60,
+                              child: OutlinedButton(
+                                onPressed: previousPage,
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(
+                                    color: Color(0xffF36A21),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(22),
+                                  ),
+                                ),
+                                child: Text(
+                                  tr.translate('skip'),
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    color: Color(0xffF36A21),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        if (currentPage > 0) const SizedBox(width: 16),
                         Expanded(
                           child: SizedBox(
                             height: 60,
                             child: ElevatedButton(
-                              onPressed: nextPage,
+                              onPressed: () => nextPage(pages.length),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xffF36A21),
                                 elevation: 0,
@@ -238,8 +270,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 children: [
                                   Text(
                                     currentPage == pages.length - 1
-                                        ? 'ابدأ الآن'
-                                        : 'التالي',
+                                        ? tr.translate('start_now')
+                                        : tr.translate('next'),
                                     style: const TextStyle(
                                       fontSize: 18,
                                       color: Colors.white,
@@ -248,8 +280,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   ),
                                   if (currentPage != pages.length - 1) ...[
                                     const SizedBox(width: 10),
-                                    const Icon(
-                                      Icons.arrow_forward_ios_rounded,
+                                    Icon(
+                                      isArabic
+                                          ? Icons.arrow_back_ios_new_rounded
+                                          : Icons.arrow_forward_ios_rounded,
                                       color: Colors.white,
                                       size: 20,
                                     ),
@@ -259,45 +293,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: SizedBox(
-                            height: 60,
-                            child: ElevatedButton(
-                              onPressed: previousPage,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFF2F2F6),
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(22),
-                                ),
-                              ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.arrow_back_ios_new_rounded,
-                                    color: Color(0xFF4C4C4C),
-                                    size: 20,
-                                  ),
-                                  SizedBox(width: 10),
-                                  Text(
-                                    'السابق',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      color: Color(0xFF4C4C4C),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
                 ],
               ),
             ),

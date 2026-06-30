@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/localization/app_localizations.dart';
 import 'auth_input_field.dart';
 
 class SignupForm extends StatelessWidget {
@@ -67,95 +68,87 @@ class SignupForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tr = AppLocalizations.of(context);
+
     return Form(
       key: formKey,
       child: Column(
         children: [
-          _title(isArabic ? "ادخل اسمك" : "Your Name"),
+          _title(tr.translate('your_name')),
           AuthInputField(
             fieldKey: nameKey,
             w: w,
-            hint: isArabic ? "أدخل اسمك الكامل" : "Enter your full name",
+            hint: tr.translate('enter_full_name'),
             icon: Icons.person_outline,
             controller: nameController,
-            isArabic: isArabic,
             validator: (value) {
               if (!submitted) return null;
               if (value == null || value.trim().isEmpty) {
-                return isArabic ? "الاسم مطلوب" : "Name is required";
+                return tr.translate('name_required');
               }
               return null;
             },
           ),
           const SizedBox(height: 10),
-          _title(isArabic ? "البريد الإلكتروني" : "Email"),
+          _title(tr.translate('email')),
           AuthInputField(
             fieldKey: emailKey,
             w: w,
-            hint: isArabic ? "أدخل بريدك الإلكتروني" : "Enter your email",
+            hint: tr.translate('enter_email'),
             icon: Icons.email_outlined,
             controller: emailController,
             keyboardType: TextInputType.emailAddress,
-            isArabic: isArabic,
             validator: (value) {
               if (!submitted) return null;
               if (value == null || value.trim().isEmpty) {
-                return isArabic ? "البريد الإلكتروني مطلوب" : "Email is required";
+                return tr.translate('email_required');
               }
               if (!value.contains('@')) {
-                return isArabic ? "البريد الإلكتروني غير صحيح" : "Invalid email";
+                return tr.translate('invalid_email');
               }
               return null;
             },
           ),
           const SizedBox(height: 10),
-          _title(isArabic ? "كلمة المرور" : "Password"),
+          _title(tr.translate('password')),
           AuthInputField(
             fieldKey: passwordKey,
             w: w,
-            hint: isArabic ? "أدخل كلمة المرور" : "Enter your password",
+            hint: tr.translate('enter_password'),
             icon: Icons.lock_outline,
             isPassword: true,
             obscureText: obscurePassword,
             onToggleObscure: onTogglePassword,
             controller: passwordController,
-            isArabic: isArabic,
             validator: (value) {
               if (!submitted) return null;
               if (value == null || value.isEmpty) {
-                return isArabic ? "كلمة المرور مطلوبة" : "Password is required";
+                return tr.translate('password_required');
               }
               if (value.length < 6) {
-                return isArabic
-                    ? "كلمة المرور يجب أن تكون 6 أحرف على الأقل"
-                    : "Password must be at least 6 characters";
+                return tr.translate('password_short');
               }
               return null;
             },
           ),
           const SizedBox(height: 10),
-          _title(isArabic ? "تأكيد كلمة المرور" : "Confirm Password"),
+          _title(tr.translate('confirm_password')),
           AuthInputField(
             fieldKey: confirmKey,
             w: w,
-            hint: isArabic ? "أعد إدخال كلمة المرور" : "Re-enter your password",
+            hint: tr.translate('reenter_password'),
             icon: Icons.lock_outline,
             isPassword: true,
             obscureText: obscureConfirmPassword,
             onToggleObscure: onToggleConfirmPassword,
             controller: confirmController,
-            isArabic: isArabic,
             validator: (value) {
               if (!submitted) return null;
               if (value == null || value.isEmpty) {
-                return isArabic
-                    ? "تأكيد كلمة المرور مطلوب"
-                    : "Confirm password is required";
+                return tr.translate('confirm_password_required');
               }
               if (value != passwordController.text) {
-                return isArabic
-                    ? "كلمة المرور غير متطابقة"
-                    : "Passwords do not match";
+                return tr.translate('passwords_not_match');
               }
               return null;
             },
@@ -184,7 +177,7 @@ class SignupForm extends StatelessWidget {
                       ),
                     )
                   : Text(
-                      isArabic ? "إنشاء حساب" : "Sign Up",
+                      tr.translate('signup'),
                       style: TextStyle(
                         fontSize: w * 0.045,
                         color: const Color(0xFF6E5AA6),
@@ -193,22 +186,6 @@ class SignupForm extends StatelessWidget {
                     ),
             ),
           ),
-          const SizedBox(height: 18),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: w * 0.08),
-            child: Text(
-              isArabic
-                  ? "بالمتابعة أنت توافق على الشروط والأحكام وسياسة الخصوصية"
-                  : "By continuing, you agree to the Terms & Conditions and Privacy Policy",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: w * 0.030,
-                color: const Color(0xFF1F1F1F),
-                height: 1.4,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
         ],
       ),
     );
